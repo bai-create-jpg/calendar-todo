@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简易日历待办事项</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .current-date {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        @media (min-width: 768px) {
+            .app-container {
+                flex-direction: row;
+            }
+        }
+        
+        .calendar-section {
+            flex: 1;
+            background-color: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+        
+        .todo-section {
+            flex: 1;
+            background-color: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .calendar-title {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .nav-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6a11cb;
+            padding: 8px 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-weight: 600;
+            color: #6a11cb;
+            margin-bottom: 15px;
+        }
+        
+        .weekday {
+            padding: 12px 0;
+        }
+        
+        .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+        
+        .day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 5px;
+            position: relative;
+        }
+        
+        .day:hover {
+            background-color: #f0f5ff;
+            transform: translateY(-3px);
+        }
+        
+        .day.today {
+            background-color: #6a11cb;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .day.selected {
+            background-color: #2575fc;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .day.other-month {
+            color: #aaa;
+        }
+        
+        .todo-count {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: #ff4757;
+            color: white;
+            font-size: 0.7rem;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .todo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .todo-title {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .selected-date {
+            color: #6a11cb;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+        
+        .add-todo-form {
+            display: flex;
+            margin-bottom: 25px;
+            gap: 10px;
+        }
+        
+        #todo-input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border 0.3s ease;
+        }
+        
+        #todo-input:focus {
+            border-color: #6a11cb;
+            outline: none;
+        }
+        
+        #add-todo-btn {
+            background-color: #6a11cb;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 0 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+        
+        #add-todo-btn:hover {
+            background-color: #5809b5;
+        }
+        
+        .todos-container {
+            flex: 1;
+            overflow-y: auto;
+            max-height: 400px;
+            padding-right: 5px;
+        }
+        
+        .todo-item {
+            display: flex;
+            align-items: center;
+            padding: 18px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .todo-item:hover {
+            background-color: #f0f5ff;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .todo-text {
+            flex: 1;
+            margin-left: 15px;
+            font-size: 1.05rem;
+        }
+        
+        .todo-checkbox {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+        }
+        
+        .todo-checkbox:checked + .todo-text {
+            text-decoration: line-through;
+            color: #888;
+        }
+        
+        .delete-todo {
+            background: none;
+            border: none;
+            color: #ff4757;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .delete-todo:hover {
+            background-color: rgba(255, 71, 87, 0.1);
+        }
+        
+        .empty-todos {
+            text-align: center;
+            color: #888;
+            padding: 40px 20px;
+            font-size: 1.1rem;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 20px;
+        }
+        
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+        
+        /* 移动端优化 */
+        @media (max-width: 767px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .calendar-section, .todo-section {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .calendar-title, .todo-title {
+                font-size: 1.5rem;
+            }
+            
+            .day {
+                font-size: 0.9rem;
+            }
+            
+            .add-todo-form {
+                flex-direction: column;
+            }
+            
+            #add-todo-btn {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-calendar-alt"></i> 简易日历待办事项</h1>
+            <p class="current-date">今天是 <span id="today-full-date"></span></p>
+        </header>
+        
+        <div class="app-container">
+            <section class="calendar-section">
+                <div class="calendar-header">
+                    <button class="nav-btn" id="prev-month"><i class="fas fa-chevron-left"></i></button>
+                    <h2 class="calendar-title" id="current-month-year"></h2>
+                    <button class="nav-btn" id="next-month"><i class="fas fa-chevron-right"></i></button>
+                </div>
+                
+                <div class="weekdays">
+                    <div class="weekday">日</div>
+                    <div class="weekday">一</div>
+                    <div class="weekday">二</div>
+                    <div class="weekday">三</div>
+                    <div class="weekday">四</div>
+                    <div class="weekday">五</div>
+                    <div class="weekday">六</div>
+                </div>
+                
+                <div class="days" id="calendar-days"></div>
+            </section>
+            
+            <section class="todo-section">
+                <div class="todo-header">
+                    <h2 class="todo-title"><i class="fas fa-tasks"></i> 待办事项</h2>
+                    <div class="selected-date" id="selected-date-display"></div>
+                </div>
+                
+                <div class="add-todo-form">
+                    <input type="text" id="todo-input" placeholder="输入待办事项，按回车或点击添加">
+                    <button id="add-todo-btn">添加</button>
+                </div>
+                
+                <div class="todos-container" id="todos-container">
+                    <!-- 待办事项将动态添加到这里 -->
+                </div>
+            </section>
+        </div>
+        
+        <footer>
+            <p>数据保存在浏览器本地，请勿清除浏览器数据 | 简易日历待办事项 &copy; <span id="current-year"></span></p>
+        </footer>
+    </div>
+
+    <script>
+        // 当前显示的月份和年份
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+        let selectedDate = new Date();
+        
+        // DOM元素
+        const currentMonthYearEl = document.getElementById('current-month-year');
+        const todayFullDateEl = document.getElementById('today-full-date');
+        const calendarDaysEl = document.getElementById('calendar-days');
+        const selectedDateDisplayEl = document.getElementById('selected-date-display');
+        const prevMonthBtn = document.getElementById('prev-month');
+        const nextMonthBtn = document.getElementById('next-month');
+        const todoInput = document.getElementById('todo-input');
+        const addTodoBtn = document.getElementById('add-todo-btn');
+        const todosContainerEl = document.getElementById('todos-container');
+        const currentYearEl = document.getElementById('current-year');
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 设置当前年份
+            currentYearEl.textContent = new Date().getFullYear();
+            
+            // 设置今天完整日期
+            const today = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            todayFullDateEl.textContent = today.toLocaleDateString('zh-CN', options);
+            
+            // 渲染日历
+            renderCalendar(currentMonth, currentYear);
+            
+            // 显示今天的待办事项
+            updateSelectedDateDisplay();
+            loadTodosForDate(selectedDate);
+            
+            // 事件监听器
+            prevMonthBtn.addEventListener('click', () => {
+                currentMonth--;
+                if (currentMonth < 0) {
+                    currentMonth = 11;
+                    currentYear--;
+                }
+                renderCalendar(currentMonth, currentYear);
+            });
+            
+            nextMonthBtn.addEventListener('click', () => {
+                currentMonth++;
+                if (currentMonth > 11) {
+                    currentMonth = 0;
+                    currentYear++;
+                }
+                renderCalendar(currentMonth, currentYear);
+            });
+            
+            addTodoBtn.addEventListener('click', addTodo);
+            
+            todoInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addTodo();
+                }
+            });
+        });
+        
+        // 渲染日历
+        function renderCalendar(month, year) {
+            // 更新月份年份显示
+            const monthNames = ["一月", "二月", "三月", "四月", "五月", "六月", 
+                               "七月", "八月", "九月", "十月", "十一月", "十二月"];
+            currentMonthYearEl.textContent = `${year}年 ${monthNames[month]}`;
+            
+            // 清空日历
+            calendarDaysEl.innerHTML = '';
+            
+            // 获取当前月的第一天和最后一天
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            
+            // 获取第一天是星期几 (0=周日, 6=周六)
+            const firstDayIndex = firstDay.getDay();
+            
+            // 获取上个月的最后几天
+            const prevMonthLastDay = new Date(year, month, 0).getDate();
+            
+            // 下个月的前几天
+            const nextMonthDays = 7 - ((firstDayIndex + daysInMonth) % 7);
+            
+            // 获取今天的日期
+            const today = new Date();
+            const isTodayMonth = today.getMonth() === month && today.getFullYear() === year;
+            
+            // 获取选中的日期
+            const isSelectedMonth = selectedDate.getMonth() === month && selectedDate.getFullYear() === year;
+            const selectedDateNum = selectedDate.getDate();
+            
+            // 添加上个月的最后几天
+            for (let i = firstDayIndex; i > 0; i--) {
+                const day = document.createElement('div');
+                day.className = 'day other-month';
+                day.textContent = prevMonthLastDay - i + 1;
+                calendarDaysEl.appendChild(day);
+            }
+            
+            // 添加当前月的所有天
+            for (let i = 1; i <= daysInMonth; i++) {
+                const day = document.createElement('div');
+                day.className = 'day';
+                day.textContent = i;
+                
+                // 添加日期数据属性
+                day.dataset.date = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                
+                // 检查是否是今天
+                if (isTodayMonth && i === today.getDate()) {
+                    day.classList.add('today');
+                }
+                
+                // 检查是否是选中的日期
+                if (isSelectedMonth && i === selectedDateNum) {
+                    day.classList.add('selected');
+                }
+                
+                // 添加待办事项计数
+                const todoCount = getTodoCountForDate(new Date(year, month, i));
+                if (todoCount > 0) {
+                    const todoCountEl = document.createElement('div');
+                    todoCountEl.className = 'todo-count';
+                    todoCountEl.textContent = todoCount;
+                    day.appendChild(todoCountEl);
+                }
+                
+                // 点击事件
+                day.addEventListener('click', function() {
+                    // 更新选中的日期
+                    selectedDate = new Date(year, month, i);
+                    
+                    // 重新渲染日历以更新选中状态
+                    renderCalendar(currentMonth, currentYear);
+                    
+                    // 更新待办事项显示
+                    updateSelectedDateDisplay();
+                    loadTodosForDate(selectedDate);
+                });
+                
+                calendarDaysEl.appendChild(day);
+            }
+            
+            // 添加下个月的前几天
+            for (let i = 1; i <= nextMonthDays && (firstDayIndex + daysInMonth + i) % 7 !== 0; i++) {
+                const day = document.createElement('div');
+                day.className = 'day other-month';
+                day.textContent = i;
+                calendarDaysEl.appendChild(day);
+            }
+        }
+        
+        // 更新选中的日期显示
+        function updateSelectedDateDisplay() {
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            selectedDateDisplayEl.textContent = selectedDate.toLocaleDateString('zh-CN', options);
+        }
+        
+        // 获取指定日期的待办事项数量
+        function getTodoCountForDate(date) {
+            const dateKey = formatDateKey(date);
+            const todos = JSON.parse(localStorage.getItem(dateKey) || '[]');
+            // 只返回未完成的待办事项数量
+            return todos.filter(todo => !todo.completed).length;
+        }
+        
+        // 加载指定日期的待办事项
+        function loadTodosForDate(date) {
+            const dateKey = formatDateKey(date);
+            const todos = JSON.parse(localStorage.getItem(dateKey) || '[]');
+            
+            // 清空待办事项容器
+            todosContainerEl.innerHTML = '';
+            
+            if (todos.length === 0) {
+                const emptyMsg = document.createElement('div');
+                emptyMsg.className = 'empty-todos';
+                emptyMsg.innerHTML = `<i class="fas fa-clipboard-list" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.5;"></i><p>这一天没有待办事项</p><p style="font-size: 0.9rem; margin-top: 10px;">点击下方输入框添加第一个待办事项</p>`;
+                todosContainerEl.appendChild(emptyMsg);
+                return;
+            }
+            
+            // 添加待办事项
+            todos.forEach((todo, index) => {
+                const todoEl = createTodoElement(todo, index, dateKey);
+                todosContainerEl.appendChild(todoEl);
+            });
+        }
+        
+        // 创建待办事项元素
+        function createTodoElement(todo, index, dateKey) {
+            const todoEl = document.createElement('div');
+            todoEl.className = 'todo-item';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'todo-checkbox';
+            checkbox.checked = todo.completed;
+            checkbox.addEventListener('change', function() {
+                toggleTodoCompleted(dateKey, index);
+            });
+            
+            const todoText = document.createElement('span');
+            todoText.className = 'todo-text';
+            todoText.textContent = todo.text;
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-todo';
+            deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+            deleteBtn.addEventListener('click', function() {
+                deleteTodo(dateKey, index);
+            });
+            
+            todoEl.appendChild(checkbox);
+            todoEl.appendChild(todoText);
+            todoEl.appendChild(deleteBtn);
+            
+            return todoEl;
+        }
+        
+        // 添加待办事项
+        function addTodo() {
+            const todoText = todoInput.value.trim();
+            if (!todoText) {
+                todoInput.focus();
+                return;
+            }
+            
+            const dateKey = formatDateKey(selectedDate);
+            const todos = JSON.parse(localStorage.getItem(dateKey) || '[]');
+            
+            // 添加新待办事项
+            todos.push({
+                text: todoText,
+                completed: false,
+                createdAt: new Date().toISOString()
+            });
+            
+            // 保存到本地存储
+            localStorage.setItem(dateKey, JSON.stringify(todos));
+            
+            // 清空输入框
+            todoInput.value = '';
+            todoInput.focus();
+            
+            // 重新加载待办事项
+            loadTodosForDate(selectedDate);
+            
+            // 更新日历中的待办事项计数
+            renderCalendar(currentMonth, currentYear);
+        }
+        
+        // 切换待办事项完成状态
+        function toggleTodoCompleted(dateKey, index) {
+            const todos = JSON.parse(localStorage.getItem(dateKey) || '[]');
+            if (todos[index]) {
+                todos[index].completed = !todos[index].completed;
+                localStorage.setItem(dateKey, JSON.stringify(todos));
+                loadTodosForDate(selectedDate);
+                renderCalendar(currentMonth, currentYear);
+            }
+        }
+        
+        // 删除待办事项
+        function deleteTodo(dateKey, index) {
+            const todos = JSON.parse(localStorage.getItem(dateKey) || '[]');
+            if (todos[index]) {
+                todos.splice(index, 1);
+                localStorage.setItem(dateKey, JSON.stringify(todos));
+                loadTodosForDate(selectedDate);
+                renderCalendar(currentMonth, currentYear);
+            }
+        }
+        
+        // 将日期格式化为YYYY-MM-DD字符串
+        function formatDateKey(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+    </script>
+</body>
+</html>
